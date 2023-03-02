@@ -5,8 +5,8 @@
 # begin properties
 properties() { '
 kernel.string=ExampleKernel by osm0sis @ xda-developers
-do.devicecheck=1
-do.modules=0
+do.devicecheck=0
+do.modules=1
 do.systemless=1
 do.cleanup=1
 do.cleanuponabort=0
@@ -28,8 +28,9 @@ set_perm_recursive 0 0 750 750 $ramdisk/init* $ramdisk/sbin;
 
 
 ## boot shell variables
-block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
-is_slot_device=0;
+#block=$(find /dev -name boot | head -n 1);
+block=auto;
+is_slot_device=auto;
 ramdisk_compression=auto;
 patch_vbmeta_flag=auto;
 
@@ -58,6 +59,29 @@ append_file fstab.tuna "usbdisk" fstab;
 write_boot; # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
 ## end boot install
 
+#===[ AkameKernel add-ons start ]===#
+
+#Mounting partitions
+ui_print " "
+ui_print "Mounting system and vendor"
+ui_print " "
+mount -o rw,remount /system
+mount -o rw,remount /vendor
+mount -o rw,remount /
+
+#cp fw files
+mkdir -p /system/etc/firmware/
+ui_print "- Copying firmware to system/etc/firmware"
+install "modules/system/etc/firmware" 0755 0644 "/system/etc/firmware";
+
+#mkdir
+mkdir -p /lib/modules/$(uname -r)
+
+#install help magisk module & other
+ui_print "Installing Magisk Module for Automaticly Activate (insmod) All Modules (*.ko-files) at Start Your Android"
+cp -rf AutoInsmodModules /data/adb/modules/
+
+#===[ End of the AkameKernel add-ons ]===#
 
 ## init_boot shell variables
 #block=init_boot;
